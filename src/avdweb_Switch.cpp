@@ -169,9 +169,31 @@ Switch::Switch(byte _pin, byte PinMode, bool polarity,
     poll();
 }
 
+Switch::Switch(byte _pin, inputCallback_t getInputFct, bool polarity,
+    unsigned long debouncePeriod, unsigned long longPressPeriod,
+    unsigned long doubleClickPeriod, unsigned long deglitchPeriod)
+    : deglitchPeriod(deglitchPeriod)
+    , debouncePeriod(debouncePeriod)
+    , longPressPeriod(longPressPeriod)
+    , doubleClickPeriod(doubleClickPeriod)
+    , pin(_pin)
+    , polarity(polarity)
+{
+    _inputCallback = getInputFct;
+    switchedTime = millis();
+    // should not use digitalRead, use !polarity instead (idle))
+    // debounced = digitalRead(pin);
+    debounced = !polarity;
+    singleClickDisable = true;
+    poll();
+}
+
 bool Switch::poll()
 {
-    input = digitalRead(pin);
+    if (_inputCallback != nullptr)
+        input = _inputCallback(pin);
+    else
+        input = digitalRead(pin);
     ms = millis();
     return process();
 }

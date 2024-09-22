@@ -42,10 +42,15 @@
 #include <Arduino.h>
 
 typedef void (*switchCallback_t)(void*);
+typedef bool (*inputCallback_t)(byte pin);
 
 class Switch {
 public:
     Switch(byte _pin, byte PinMode = INPUT_PULLUP, bool polarity = LOW,
+        unsigned long debouncePeriod = 50, unsigned long longPressPeriod = 300,
+        unsigned long doubleClickPeriod = 250,
+        unsigned long deglitchPeriod = 10);
+    Switch(byte _pin, inputCallback_t getInputFct, bool polarity = LOW,
         unsigned long debouncePeriod = 50, unsigned long longPressPeriod = 300,
         unsigned long doubleClickPeriod = 250,
         unsigned long deglitchPeriod = 10);
@@ -83,6 +88,9 @@ protected:
     const bool polarity;
     bool input, lastInput, equal, deglitched, debounced, _switched, _longPress,
         longPressDisable, _doubleClick, _singleClick, singleClickDisable;
+
+    // input read callback
+    inputCallback_t _inputCallback = nullptr;
 
     // Event callbacks
     switchCallback_t _pushedCallback = nullptr;
